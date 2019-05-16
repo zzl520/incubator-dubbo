@@ -585,7 +585,7 @@ limitations under the License.
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+           <!-- <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven_javadoc_version}</version>
                 <executions>
@@ -613,7 +613,7 @@ limitations under the License.
                         <link>http://docs.oracle.com/javase/7/docs/api</link>
                     </links>
                 </configuration>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 </project>
