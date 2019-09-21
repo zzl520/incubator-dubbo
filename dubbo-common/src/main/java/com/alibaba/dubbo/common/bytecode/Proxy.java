@@ -197,6 +197,11 @@ public abstract class Proxy {
             ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }");
             Class<?> pc = ccm.toClass();
             proxy = (Proxy) pc.newInstance();
+
+
+            // 打印代理类代码,会生成两个类，由于名称不区分大小写，所以打印到两个目录
+            ccp.getClassPool().get("com.alibaba.dubbo.common.bytecode.proxy0").debugWriteFile("./a");
+            ccm.getClassPool().get("com.alibaba.dubbo.common.bytecode.Proxy0").debugWriteFile("./b");
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

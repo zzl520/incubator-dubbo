@@ -243,6 +243,10 @@ public abstract class Wrapper {
             int ix = 0;
             for (Method m : ms.values())
                 wc.getField("mts" + ix++).set(null, m.getParameterTypes());
+
+
+            //生成wrapper代码
+            cc.getClassPool().get("com.alibaba.dubbo.common.bytecode.Wrapper0").debugWriteFile("./c");
             return (Wrapper) wc.newInstance();
         } catch (RuntimeException e) {
             throw e;
