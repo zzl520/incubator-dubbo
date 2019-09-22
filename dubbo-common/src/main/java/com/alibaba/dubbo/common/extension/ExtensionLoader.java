@@ -184,6 +184,11 @@ public class ExtensionLoader<T> {
     public List<T> getActivateExtension(URL url, String[] values, String group) {
         List<T> exts = new ArrayList<T>();
         List<String> names = values == null ? new ArrayList<String>(0) : Arrays.asList(values);
+
+        /**
+         * 没有注销掉默认的，就加载默认的。通过-前缀是注销
+         *
+         */
         if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
             getExtensionClasses();
             for (Map.Entry<String, Activate> entry : cachedActivates.entrySet()) {
@@ -482,6 +487,13 @@ public class ExtensionLoader<T> {
         return new IllegalStateException(buf.toString());
     }
 
+
+    /**
+     * 获取扩展对象。会执行ioc和aop
+     *
+     * @param name
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private T createExtension(String name) {
         Class<?> clazz = getExtensionClasses().get(name);
@@ -735,6 +747,7 @@ public class ExtensionLoader<T> {
     /**
      * 创建自适应实现类
      * 生成代码，然后动态编译
+     *
      * @return
      */
     private Class<?> createAdaptiveExtensionClass() {

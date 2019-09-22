@@ -525,6 +525,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setHost(LOCALHOST)
                     .setPort(0);
             ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
+            /**
+             * proxyFactory.getInvoker创建invoker，内部生成wrapper
+             *
+             */
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);

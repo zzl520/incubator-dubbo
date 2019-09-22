@@ -113,6 +113,11 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         return service;
     }
 
+    /**
+     * 服务导出的入口
+     *
+     * @param event
+     */
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (isDelay() && !isExported() && !isUnexported()) {
             if (logger.isInfoEnabled()) {

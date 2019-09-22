@@ -38,7 +38,6 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * ZookeeperRegistry
- *
  */
 public class ZookeeperRegistry extends FailbackRegistry {
 
@@ -52,6 +51,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final Set<String> anyServices = new ConcurrentHashSet<String>();
 
+    /**
+     * （消费者url，(registryDirectory，zklistener)）
+     * 通过zklistener监听zk节点的数据变化。
+     */
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = new ConcurrentHashMap<URL, ConcurrentMap<NotifyListener, ChildListener>>();
 
     private final ZookeeperClient zkClient;
@@ -168,6 +171,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     if (zkListener == null) {
                         listeners.putIfAbsent(listener, new ChildListener() {
                             public void childChanged(String parentPath, List<String> currentChilds) {
+                                //注册中心，节点的子节点变化时，触发回调
                                 ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));
                             }
                         });

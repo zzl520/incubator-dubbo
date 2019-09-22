@@ -246,7 +246,7 @@ public abstract class Wrapper {
 
 
             //生成wrapper代码
-            cc.getClassPool().get("com.alibaba.dubbo.common.bytecode.Wrapper0").debugWriteFile("./c");
+         //   cc.getClassPool().get("com.alibaba.dubbo.common.bytecode.Wrapper0").debugWriteFile("./c");
             return (Wrapper) wc.newInstance();
         } catch (RuntimeException e) {
             throw e;

@@ -37,6 +37,11 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
 
+    /**
+     * TargetChildListener代表第三方插件的listener，比如curator
+     * ChildListener是系统的listener，这个listener对用户暴露，他的能力来源于TargetChildListener
+     * 保存每个path的listener。当path的子节点发生变化时，触发回调
+     */
     private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, TargetChildListener>>();
 
     private volatile boolean closed = false;

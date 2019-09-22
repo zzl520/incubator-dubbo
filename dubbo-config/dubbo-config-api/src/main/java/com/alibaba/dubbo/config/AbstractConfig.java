@@ -120,6 +120,8 @@ public abstract class AbstractConfig implements Serializable {
                     }
                     if (value == null || value.length() == 0) {
                         String pn = prefix + property;
+
+                        //取系统属性，比如dubbo.application.name
                         value = System.getProperty(pn);
                         if (!StringUtils.isBlank(value)) {
                             logger.info("Use System Property " + pn + " to config dubbo");

@@ -53,7 +53,6 @@ import static com.alibaba.dubbo.common.Constants.QOS_PORT;
 
 /**
  * RegistryProtocol
- *
  */
 public class RegistryProtocol implements Protocol {
 
@@ -125,7 +124,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
-        //export invoker
+        //export invoker  开启netty服务
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
 
         URL registryUrl = getRegistryUrl(originInvoker);
@@ -299,6 +298,7 @@ public class RegistryProtocol implements Protocol {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false)));
         }
+        //订阅providers，routers，configurators节点
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
                         + "," + Constants.CONFIGURATORS_CATEGORY
