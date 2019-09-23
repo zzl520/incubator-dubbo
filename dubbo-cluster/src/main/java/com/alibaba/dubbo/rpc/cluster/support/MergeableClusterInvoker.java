@@ -78,7 +78,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         } catch (NoSuchMethodException e) {
             returnType = null;
         }
-
+        //调用多个invoker
         Map<String, Future<Result>> results = new HashMap<String, Future<Result>>();
         for (final Invoker<T> invoker : invokers) {
             Future<Result> future = executor.submit(new Callable<Result>() {
@@ -175,6 +175,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                 for (Result r : resultList) {
                     rets.add(r.getValue());
                 }
+                //多个结果合并
                 result = resultMerger.merge(
                         rets.toArray((Object[]) Array.newInstance(returnType, 0)));
             } else {

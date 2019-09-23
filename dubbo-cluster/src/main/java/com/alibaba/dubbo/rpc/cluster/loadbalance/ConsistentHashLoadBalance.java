@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * ConsistentHashLoadBalance
- *
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
@@ -54,11 +53,15 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     private static final class ConsistentHashSelector<T> {
 
         private final TreeMap<Long, Invoker<T>> virtualInvokers;
-
+        /**
+         * 虚拟节点扩散倍数
+         */
         private final int replicaNumber;
 
         private final int identityHashCode;
-
+        /**
+         * 对参数下标，计算hash值
+         */
         private final int[] argumentIndex;
 
         ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
@@ -101,10 +104,10 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
         private Invoker<T> selectForKey(long hash) {
             Map.Entry<Long, Invoker<T>> entry = virtualInvokers.tailMap(hash, true).firstEntry();
-        	if (entry == null) {
-        		entry = virtualInvokers.firstEntry();
-        	}
-        	return entry.getValue();
+            if (entry == null) {
+                entry = virtualInvokers.firstEntry();
+            }
+            return entry.getValue();
         }
 
         private long hash(byte[] digest, int number) {

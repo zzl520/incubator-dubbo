@@ -382,11 +382,19 @@ public class UrlUtils {
 
     public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
         if (param != null && pattern.startsWith("$")) {
+            //引用服务消费者参数，param为消费者url。pattern是规则的value值，如果value中含有*，则会取消费者的参数。
             pattern = param.getRawParameter(pattern.substring(1));
         }
         return isMatchGlobPattern(pattern, value);
     }
 
+    /**
+     * 验证是否匹配
+     *
+     * @param pattern
+     * @param value
+     * @return
+     */
     public static boolean isMatchGlobPattern(String pattern, String value) {
         if ("*".equals(pattern))
             return true;

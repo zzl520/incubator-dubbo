@@ -40,7 +40,6 @@ import java.util.regex.Pattern;
 
 /**
  * ConditionRouter
- *
  */
 public class ConditionRouter implements Router, Comparable<Router> {
 
@@ -148,6 +147,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
             return invokers;
         }
         try {
+            //先匹配消费者
             if (!matchWhen(url, invocation)) {
                 return invokers;
             }
@@ -193,6 +193,15 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return !(thenCondition == null || thenCondition.isEmpty()) && matchCondition(thenCondition, url, param, null);
     }
 
+    /**
+     * when和then的判断，都调用这个方法
+     * when：
+     * @param condition
+     * @param url
+     * @param param
+     * @param invocation
+     * @return
+     */
     private boolean matchCondition(Map<String, MatchPair> condition, URL url, URL param, Invocation invocation) {
         Map<String, String> sample = url.toMap();
         boolean result = false;
@@ -200,6 +209,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
             String key = matchPair.getKey();
             String sampleValue;
             //get real invoked method name from invocation
+            //优先匹配方法名，其次匹配url中的参数key
             if (invocation != null && (Constants.METHOD_KEY.equals(key) || Constants.METHODS_KEY.equals(key))) {
                 sampleValue = invocation.getMethodName();
             } else {
@@ -230,6 +240,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
         final Set<String> matches = new HashSet<String>();
         final Set<String> mismatches = new HashSet<String>();
 
+        //验证是否匹配
         private boolean isMatch(String value, URL param) {
             if (!matches.isEmpty() && mismatches.isEmpty()) {
                 for (String match : matches) {

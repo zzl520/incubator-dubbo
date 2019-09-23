@@ -37,14 +37,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * AbstractClusterInvoker
- *
  */
 public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     private static final Logger logger = LoggerFactory
             .getLogger(AbstractClusterInvoker.class);
     protected final Directory<T> directory;
-
+    /**
+     * 是否需要健康检查，失败重试，粘滞连接，才可能需要健康检查，正常调用，不需要检查
+     */
     protected final boolean availablecheck;
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -88,16 +89,16 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     /**
      * Select a invoker using loadbalance policy.</br>
-     * a)Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or, 
+     * a)Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or,
      * if this invoker is unavailable, then continue step b (reselect), otherwise return the first selected invoker</br>
      * b)Reslection, the validation rule for reselection: selected > available. This rule guarantees that
-     * the selected invoker has the minimum chance to be one in the previously selected list, and also 
+     * the selected invoker has the minimum chance to be one in the previously selected list, and also
      * guarantees this invoker is available.
      *
      * @param loadbalance load balance policy
      * @param invocation
-     * @param invokers invoker candidates
-     * @param selected  exclude selected invokers or not
+     * @param invokers    invoker candidates
+     * @param selected    exclude selected invokers or not
      * @return
      * @throws RpcException
      */
@@ -106,6 +107,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             return null;
         String methodName = invocation == null ? "" : invocation.getMethodName();
 
+        /**
+         * 粘滞连接，每次尽可能调同一个提供者
+         */
         boolean sticky = invokers.get(0).getUrl().getMethodParameter(methodName, Constants.CLUSTER_STICKY_KEY, Constants.DEFAULT_CLUSTER_STICKY);
         {
             //ignore overloaded method
@@ -113,15 +117,23 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                 stickyInvoker = null;
             }
             //ignore concurrency problem
+            /**
+             * selected代表此次调用，失败过的invoker。。
+             * 如果selected包含stickyInvoker，表明stickyInvoker对应的提供者可能因网络原因未能成功提供服务，但是还没有挂。
+             * 说明不可靠，不应该提供服务。
+             */
             if (sticky && stickyInvoker != null && (selected == null || !selected.contains(stickyInvoker))) {
+                //是否需要进行健康检查
                 if (availablecheck && stickyInvoker.isAvailable()) {
                     return stickyInvoker;
                 }
             }
         }
+        //stickyInvoker不可用，需要进行负载均衡
         Invoker<T> invoker = doSelect(loadbalance, invocation, invokers, selected);
 
         if (sticky) {
+            //设置stickyInvoker
             stickyInvoker = invoker;
         }
         return invoker;
@@ -139,16 +151,19 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if (loadbalance == null) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
         }
+        //负载均衡
         Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
 
         //If the `invoker` is in the  `selected` or invoker is unavailable && availablecheck is true, reselect.
         if ((selected != null && selected.contains(invoker))
                 || (!invoker.isAvailable() && getUrl() != null && availablecheck)) {
             try {
+                //负载均衡的结果，过不了健康检查。则需要重选
                 Invoker<T> rinvoker = reselect(loadbalance, invocation, invokers, selected, availablecheck);
                 if (rinvoker != null) {
                     invoker = rinvoker;
                 } else {
+                    //到这个地方，是没有健康的invoker的，
                     //Check the index of current selected invoker, if it's not the last one, choose the one at index+1.
                     int index = invokers.indexOf(invoker);
                     try {
@@ -167,6 +182,8 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     /**
      * Reselect, use invokers not in `selected` first, if all invokers are in `selected`, just pick an available one using loadbalance policy.
+     * <p>
+     * 查找可用的invoker，放到reselectInvokers里，然后调用负载均衡，选择一个
      *
      * @param loadbalance
      * @param invocation
